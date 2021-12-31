@@ -22,16 +22,13 @@ def main():
     # crate a mapping for each cave
     cave_mapping = {}
     for cave in caves:
-        cave_mapping[cave] = {
-            'canRevisit': cave == cave.upper(),
-            'adjacent': []
-        }
+        cave_mapping[cave] = []
         for line in lines:
             options = line.split('-')
             if cave in options:
                 for option in options:
                     if option != cave:
-                        cave_mapping[cave]['adjacent'].append(option)
+                        cave_mapping[cave].append(option)
 
 
     all_paths = []
@@ -45,27 +42,40 @@ def main():
 
     return answer
 
+def is_path_done(path):
+    current_cave = path[-1]
+
+    if current_cave == 'end' or (len(path) >1 and current_cave == 'start'):
+        return True
+
+    num_duplicated = 0
+    for cave in set(path):
+        if cave == cave.upper():
+            continue
+
+        if path.count(cave) >= 3:
+            return True
+        elif path.count(cave) == 2:
+            num_duplicated += 1
+            if num_duplicated > 1:
+                return True
+    
+    return False
+
 def traverse_path(current_cave, mapping, all_paths, current_path=[]):
-    if current_cave in current_path and not mapping[current_cave]['canRevisit']:
-        # upcoming cave is already in the path and we can't revisit it
-        # path is invalide, don't update our tracker
+    temp_path = current_path + [current_cave]
+
+    if is_path_done(temp_path):
+        if current_cave == 'end':
+            all_paths.append(temp_path)
         return None
     else:
-        # assume the cave is visitable
-        temp_path = current_path + [current_cave]
-
-    if current_cave == 'end':
-        # if this cave is the end, update our tracker
-        all_paths.append(temp_path)
-    else:
-        # otherwise see what options are available
-        for cave in mapping[current_cave]['adjacent']:
-            # test the next cave
+        for cave in mapping[current_cave]:
             traverse_path(cave, mapping, all_paths, temp_path)
 
 
 if __name__ == "__main__":
-    print("\n~~ Day 12 - Part One ~~\n")
+    print("\n~~ Day 12 - Part Two ~~\n")
 
     answer = main()
 
